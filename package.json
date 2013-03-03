@@ -1,0 +1,17 @@
+{
+  "name": "echidna-data",
+  "version": "0.0.0",
+  "description": "Data structures for the echidna project",
+  "private": "true",
+  "dependencies": {
+    "should": "~1.2.2",
+    "mocha": "~1.8.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node_modules/.bin/mocha tests"
+  },
+  "repository": "Data structures for the echidna project",
+  "author": "Ricky Ng-Adam <rngadam@gmail.com>",
+  "license": "Proprietary"
+}
