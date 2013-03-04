@@ -1,5 +1,8 @@
 "use strict";
 
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
+
 function D3Container(desiredNumberOfXValues) {
   var self = this;
 
@@ -37,10 +40,12 @@ function D3Container(desiredNumberOfXValues) {
     var xIndex = self.getXIndex(key, keyIndex, x);
     self.d3[keyIndex].values[xIndex].x = x;
     self.d3[keyIndex].values[xIndex].y = y;
+    if(!self.desiredNumberOfXValues || self.xValues.length >= self.desiredNumberOfXValues) {
+      this.emit('updated');
+    }
   };
 
   self.current = function() {
-
     self.xValues.sort(function(a,b) {
       return a.x - b.x;
     });
@@ -66,5 +71,7 @@ function D3Container(desiredNumberOfXValues) {
 
   return self;
 }
+
+util.inherits(D3Container, EventEmitter)
 
 exports.D3Container = D3Container;

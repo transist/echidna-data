@@ -158,4 +158,21 @@ describe('d3container', function() {
         )
       );
     });
+
+    it('emit event when reach target number of values', function(done) {
+      var updater = new d3container.D3Container(4);
+      updater.on('updated', function() { done(); });
+
+      updater.update('word1', 1, 10);
+      updater.update('word1', 2, 20);
+      updater.update('word1', 3, 30);
+      updater.update('word1', 4, 40);
+
+    });
+
+    it('emit event every update when no target value', function(done) {
+      var updater = new d3container.D3Container();
+      updater.on('updated', function() { done(); });
+      updater.update('word1', 1, 10);
+    });
 });
