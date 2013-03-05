@@ -1,4 +1,8 @@
-;(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){"use strict";
+;(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){window.d3container =  require('./d3container');
+console.log('loaded');
+
+
+},{"./d3container":2}],2:[function(require,module,exports){"use strict";
 
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
@@ -75,7 +79,7 @@ function D3Container(desiredNumberOfXValues) {
 util.inherits(D3Container, EventEmitter)
 
 exports.D3Container = D3Container;
-},{"util":2,"events":3}],2:[function(require,module,exports){var events = require('events');
+},{"util":3,"events":4}],3:[function(require,module,exports){var events = require('events');
 
 exports.isArray = isArray;
 exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
@@ -427,7 +431,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":3}],4:[function(require,module,exports){// shim for using process in browser
+},{"events":4}],5:[function(require,module,exports){// shim for using process in browser
 
 var process = module.exports = {};
 
@@ -480,7 +484,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],3:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+},{}],4:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
 var isArray = typeof Array.isArray === 'function'
@@ -665,4 +669,4 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":4}]},{},[1]);
+},{"__browserify_process":5}]},{},[1]);
