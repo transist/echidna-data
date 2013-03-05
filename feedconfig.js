@@ -81,13 +81,22 @@ function FeedConfig(data) {
       self.numberItems = numberItems;
     }
 
+    self.setDemographics = function(gender, age, tier) {
+      self.setGender(gender);
+      self.setAgeRange(age);
+      self.setTier(tier);
+    };
+
+    self.setWordCount = function(count) {
+      self.count = count;
+    };
+
     self.setHistoric = function(start, end, sampling) {
       self.setType('historic');
       self.setStart(start);
       self.setEnd(end);
       self.setSampling(sampling);
     };
-
 
     self.setRealtime = function(sampling, numberItems) {
       self.setType('realtime');
@@ -103,7 +112,8 @@ function FeedConfig(data) {
           age: self.age,
           start: self.start,
           end: self.end,
-          sampling: self.sampling
+          sampling: self.sampling,
+          count: self.count
         });
       } else if(self.type === 'realtime') {
         return JSON.stringify({
@@ -111,7 +121,8 @@ function FeedConfig(data) {
           tier: self.tier,
           age: self.age,
           numberItems: self.numberItems,
-          sampling: self.sampling
+          sampling: self.sampling,
+          count: self.count
         });
       } else {
         throw new Error('not configured for historic data');
@@ -133,11 +144,15 @@ function FeedConfig(data) {
         self.setAgeRange(data.age);
         self.setTier(data.tier);
         self.setSampling(data.sampling);
+        self.setWordCount(data.count);
       } else {
+        self.type = null;
         self.gender = null;
         self.age = null;
         self.tier = null;
-        self.type = null;
+        self.count = null;
+        self.start = null;
+        self.end = null;
       }
     }
     self.setData(data);

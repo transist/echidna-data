@@ -10,6 +10,8 @@ describe('feedconfig', function() {
     var gender = 'Men';
     var tier = 'Tier1';
     var age = '18-';
+    var count = 13;
+
 
     var fc = new feedconfig.FeedConfig(JSON.stringify({
       start: start,
@@ -17,7 +19,8 @@ describe('feedconfig', function() {
       sampling: sampling,
       gender: gender,
       tier: tier,
-      age: age
+      age: age,
+      count: count
     }));
     var output = new feedconfig.FeedConfig(fc.toJSON());
     output.start.should.equal(start);
@@ -34,13 +37,15 @@ describe('feedconfig', function() {
     var gender = 'Men';
     var tier = 'Tier1';
     var age = '18-';
+    var count = 21;
 
     var fc = new feedconfig.FeedConfig(JSON.stringify({
       sampling: sampling,
       numberItems: numberItems,
       gender: gender,
       tier: tier,
-      age: age
+      age: age,
+      count: count
     }));
 
     var output = new feedconfig.FeedConfig(fc.toJSON());
@@ -49,5 +54,28 @@ describe('feedconfig', function() {
     output.gender.should.equal(gender);
     output.age.should.equal(age);
     output.tier.should.equal(tier);
+    output.count.should.equal(count);
+  });
+
+  it('convenience methods', function() {
+    var sampling = 'minute';
+    var gender = 'Men';
+    var tier = 'Tier1';
+    var age = '18-';
+    var count = 21;
+    var start = '2013-03-01T11:00:00';
+    var end = '2013-03-01T11:02:00'
+
+    var fc = new feedconfig.FeedConfig();
+    fc.setDemographics(gender,  age, tier);
+    fc.setHistoric(start, end, sampling);
+    fc.setWordCount(count);
+
+    var output = new feedconfig.FeedConfig(fc.toJSON());
+    output.sampling.should.equal(sampling);
+    output.gender.should.equal(gender);
+    output.age.should.equal(age);
+    output.tier.should.equal(tier);
+    output.count.should.equal(count);
   });
 });
