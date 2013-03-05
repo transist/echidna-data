@@ -1,6 +1,6 @@
 # Reusable data structures for Echidna
 
-## d3container
+## D3Container.js
 
 Receives {key, x, y}  updates and convert them into a datastructure suitable for display from d3 (and nvd3).
 
@@ -8,10 +8,13 @@ Receives {key, x, y}  updates and convert them into a datastructure suitable for
 * must track the number of points
 * must be able to handle updates out-of-order (x value, timestamp, received in different order)
 
+## FeedConfig.js
+
+Used to handle feed paramaters between client and server
 
 ## Use it in the browser
 
-You need to use [Browserify node module](https://github.com/substack/node-browserify) to turn d3 container script into sth usable by the browser.
+You need to use [Browserify node module](https://github.com/substack/node-browserify) to turn d3 container & FeedConfig into sth usable by the browser.
 
     npm install
     bash browserify.sh
