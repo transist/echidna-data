@@ -129,6 +129,14 @@ function FeedConfig(data) {
       }
     };
 
+    self.isHistoric = function() {
+      return self.type === 'historic';
+    }
+
+    self.isRealtime = function() {
+      return self.type === 'realtime';
+    }
+
     self.setData = function(data) {
       if(data) {
         var data = JSON.parse(data);

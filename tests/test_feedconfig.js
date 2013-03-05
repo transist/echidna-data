@@ -12,7 +12,6 @@ describe('feedconfig', function() {
     var age = '18-';
     var count = 13;
 
-
     var fc = new feedconfig.FeedConfig(JSON.stringify({
       start: start,
       end: end,
@@ -77,5 +76,27 @@ describe('feedconfig', function() {
     output.age.should.equal(age);
     output.tier.should.equal(tier);
     output.count.should.equal(count);
+  });
+
+  it('boolean tests', function() {
+    var sampling = 'minute';
+    var gender = 'Men';
+    var tier = 'Tier1';
+    var age = '18-';
+    var count = 21;
+    var start = '2013-03-01T11:00:00';
+    var end = '2013-03-01T11:02:00'
+    var numberItems = 30;
+
+    var fc = new feedconfig.FeedConfig();
+    fc.setDemographics(gender, age, tier);
+    fc.setHistoric(start, end, sampling);
+    fc.setWordCount(count);
+
+    fc.isHistoric().should.be.true;
+
+    fc.setRealtime(sampling, numberItems);
+
+    fc.isRealtime().should.be.true;
   });
 });
