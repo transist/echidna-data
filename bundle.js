@@ -73,6 +73,12 @@ function D3Container(desiredNumberOfXValues) {
     //return self.d3;
   }
 
+  self.setXValues = function(newValue) {
+
+    self.desiredNumberOfXValues = newValue;
+
+  }
+
   return self;
 }
 
