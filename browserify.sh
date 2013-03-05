@@ -1,0 +1,1 @@
+node_modules/.bin/browserify d3container.js > bundle.js

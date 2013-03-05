@@ -14,4 +14,4 @@ Receives {key, x, y}  updates and convert them into a datastructure suitable for
 You need to use [Browserify node module](https://github.com/substack/node-browserify) to turn d3 container script into sth usable by the browser.
 
     npm install
-    node_modules/.bin/browserify d3container.js > d3container.min.js
+    bash browserify.sh
