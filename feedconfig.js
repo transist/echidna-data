@@ -10,6 +10,7 @@ function FeedConfig(data) {
     ];
 
     self.validAgeRange = [
+      'All',
       '18-',
       '24-',
       '35-',
@@ -17,9 +18,9 @@ function FeedConfig(data) {
     ];
 
     self.validTier = [
-      'Tier1',
-      'Tier2',
-      'Tier3',
+      '1',
+      '2',
+      '3',
       'All'
     ];
 
