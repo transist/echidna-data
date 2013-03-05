@@ -1,1 +1,1 @@
-node_modules/.bin/browserify d3container.js > bundle.js
+node_modules/.bin/browserify app.js > bundle.js
