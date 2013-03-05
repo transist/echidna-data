@@ -16,7 +16,7 @@ exports.newSlice = function (numberItems, streamLength, init){
   var slice = [];
 
   generateSlice(numberItems, streamLength, init, function(data) {
-    slice = data;
+    slice = data[0];
   })
 
   return slice;
