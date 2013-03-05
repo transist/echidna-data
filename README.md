@@ -15,3 +15,44 @@ You need to use [Browserify node module](https://github.com/substack/node-browse
 
     npm install
     bash browserify.sh
+
+## faker.js
+
+faker.js is a set of functions to generate data for stream
+
+    var dataGenerator = require("faker");
+    var slice = dataGenerator.newSlice(5,1,false)[0];
+    var stream = dataGenerator.fakeInitStream(5,30);
+
+
+Generate one slice
+
+    newSlice(numberItems, streamLength, init)
+    
+        - numberItems   : Integer   how many keywords fo you want
+        - streamLength  : Integer   how many values per keywords
+        - init          : Boolean   - true  : fake timestamp
+                                    - false : use Date.now()
+
+
+Parse x slices into a stream array formatted for nvd3
+
+    fakeInitStream ( numberItems, streamLength ) 
+    
+        - numberItems   : Integer   how many keywords fo you want
+        - streamLength  : Integer   how many values per keywords
+
+
+DATA STRUCTURE
+
+    "keywords" : [
+          {
+              "keyword": "<KEYWORD>",
+              "sliceid" : "<TIMESTAMP X>"
+              "count" : "<X FOR TIME PERIOD>",
+              "samplesrcid": "<POST ID FROM WEIBO>",
+          },
+          {
+              // second keyword
+          }
+    ]
