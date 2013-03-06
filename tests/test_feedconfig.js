@@ -8,7 +8,7 @@ describe('feedconfig', function() {
     var end = '2013-03-01T11:02:00';
     var sampling = 'minute';
     var gender = 'Men';
-    var tier = 'Tier1';
+    var tier = '1';
     var age = '18-';
     var count = 13;
 
@@ -34,7 +34,7 @@ describe('feedconfig', function() {
     var sampling = 'minute';
     var numberItems = 30;
     var gender = 'Men';
-    var tier = 'Tier1';
+    var tier = '1';
     var age = '18-';
     var count = 21;
 
@@ -59,7 +59,7 @@ describe('feedconfig', function() {
   it('convenience methods', function() {
     var sampling = 'minute';
     var gender = 'Men';
-    var tier = 'Tier1';
+    var tier = '1';
     var age = '18-';
     var count = 21;
     var start = '2013-03-01T11:00:00';
@@ -81,7 +81,7 @@ describe('feedconfig', function() {
   it('boolean tests', function() {
     var sampling = 'minute';
     var gender = 'Men';
-    var tier = 'Tier1';
+    var tier = '1';
     var age = '18-';
     var count = 21;
     var start = '2013-03-01T11:00:00';
