@@ -1,90 +1,9 @@
 ;(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){window.d3container =  require('./d3container');
 window.feedconfig =  require('./feedconfig');
+window.slicer =  require('./slice');
+
 console.log('Requires loaded - compiled by Browserify');
-},{"./d3container":2,"./feedconfig":3}],2:[function(require,module,exports){"use strict";
-
-var util = require('util');
-var EventEmitter = require('events').EventEmitter;
-
-function D3Container(desiredNumberOfXValues) {
-  var self = this;
-
-  self.d3 = [];
-  self.keyToIndexes = {};
-  self.xIndexes = {};
-  self.xValues = [];
-  self.maxIndex = 0;
-  self.desiredNumberOfXValues = desiredNumberOfXValues;
-
-  self.getKeyIndex = function(key) {
-    // if does not exist, initialize
-    if(self.keyToIndexes[key] === undefined) {
-      self.keyToIndexes[key] = {};
-      self.keyToIndexes[key].keyIndex = self.d3.length;
-      self.keyToIndexes[key].xIndexes = {};
-      self.d3.push({key: key, values: []});
-    }
-    return self.keyToIndexes[key].keyIndex;
-  };
-
-  self.getXIndex = function(key, keyIndex, x) {
-    if(self.xIndexes[x] === undefined) {
-      self.xIndexes[x] = self.maxIndex++;
-      self.xValues.push({x: x, index: self.xIndexes[x]});
-    }
-    if(self.d3[keyIndex].values[self.xIndexes[x]] === undefined) {
-      self.d3[keyIndex].values[self.xIndexes[x]] = {x:-1, y:-1};
-    }
-    return self.xIndexes[x];
-  };
-
-  self.update = function(key, x, y) {
-    var keyIndex = self.getKeyIndex(key);
-    var xIndex = self.getXIndex(key, keyIndex, x);
-    self.d3[keyIndex].values[xIndex].x = x;
-    self.d3[keyIndex].values[xIndex].y = y;
-    if(!self.desiredNumberOfXValues || self.xValues.length >= self.desiredNumberOfXValues) {
-      this.emit('updated');
-    }
-  };
-
-  self.current = function() {
-    self.xValues.sort(function(a,b) {
-      return a.x - b.x;
-    });
-
-    if(self.desiredNumberOfXValues && self.xValues.length > self.desiredNumberOfXValues) {
-      self.xValues.splice(0, self.xValues.length - self.desiredNumberOfXValues);
-    }
-
-    var newD3 = [];
-    self.d3.forEach(function(d3, j) {
-        var o = {key: d3.key, values: []};
-        newD3.push(o);
-        self.xValues.forEach(function(v, i) {
-          if(d3.values[v.index] === undefined)
-            o.values.push({x: v.x, y: 0});
-          else
-            o.values.push(d3.values[v.index]);
-        });
-    });
-    return newD3;
-    //return self.d3;
-  }
-
-  self.setXValues = function(newValue) {
-
-    self.desiredNumberOfXValues = newValue;
-
-  }
-
-  return self;
-}
-
-util.inherits(D3Container, EventEmitter)
-
-exports.D3Container = D3Container;
-},{"util":4,"events":5}],4:[function(require,module,exports){var events = require('events');
+},{"./d3container":2,"./feedconfig":3,"./slice":4}],5:[function(require,module,exports){var events = require('events');
 
 exports.isArray = isArray;
 exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
@@ -436,7 +355,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":5}],6:[function(require,module,exports){// shim for using process in browser
+},{"events":6}],7:[function(require,module,exports){// shim for using process in browser
 
 var process = module.exports = {};
 
@@ -489,7 +408,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],5:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+},{}],6:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
 var isArray = typeof Array.isArray === 'function'
@@ -674,7 +593,104 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":6}],3:[function(require,module,exports){var moment = require('moment');
+},{"__browserify_process":7}],2:[function(require,module,exports){"use strict";
+
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
+var slice = require('./slice.js');
+var moment = require('moment');
+
+function D3Container(desiredNumberOfXValues) {
+  var self = this;
+
+  self.d3 = [];
+  self.keyToIndexes = {};
+  self.xIndexes = {};
+  self.xValues = [];
+  self.maxIndex = 0;
+  self.desiredNumberOfXValues = desiredNumberOfXValues;
+
+  self.getKeyIndex = function(key) {
+    // if does not exist, initialize
+    if(self.keyToIndexes[key] === undefined) {
+      self.keyToIndexes[key] = {};
+      self.keyToIndexes[key].keyIndex = self.d3.length;
+      self.keyToIndexes[key].xIndexes = {};
+      self.d3.push({key: key, values: []});
+    }
+    return self.keyToIndexes[key].keyIndex;
+  };
+
+  self.getXIndex = function(key, keyIndex, x) {
+    if(self.xIndexes[x] === undefined) {
+      self.xIndexes[x] = self.maxIndex++;
+      self.xValues.push({x: x, index: self.xIndexes[x]});
+    }
+    if(self.d3[keyIndex].values[self.xIndexes[x]] === undefined) {
+      self.d3[keyIndex].values[self.xIndexes[x]] = {x:-1, y:-1};
+    }
+    return self.xIndexes[x];
+  };
+
+  // key is word
+  // x is timestamp
+  // y is count
+  self.update = function(key, x, y) {
+    var keyIndex = self.getKeyIndex(key);
+    var xIndex = self.getXIndex(key, keyIndex, x);
+    self.d3[keyIndex].values[xIndex].x = x;
+    self.d3[keyIndex].values[xIndex].y = y;
+    if(!self.desiredNumberOfXValues || self.xValues.length >= self.desiredNumberOfXValues) {
+      this.emit('updated');
+    }
+  };
+
+  self.updateSlice = function(s) {
+    if(!(s instanceof slice.Slice))
+      throw new Error('not a slice');
+    var v;
+    while(v = s.next()) {
+      self.update(v.word, s.getTime(), v.count);
+    }
+  };
+
+  self.current = function() {
+    self.xValues.sort(function(a,b) {
+      return a.x - b.x;
+    });
+
+    if(self.desiredNumberOfXValues && self.xValues.length > self.desiredNumberOfXValues) {
+      self.xValues.splice(0, self.xValues.length - self.desiredNumberOfXValues);
+    }
+
+    var newD3 = [];
+    self.d3.forEach(function(d3, j) {
+        var o = {key: d3.key, values: []};
+        newD3.push(o);
+        self.xValues.forEach(function(v, i) {
+          if(d3.values[v.index] === undefined)
+            o.values.push({x: v.x, y: 0});
+          else
+            o.values.push(d3.values[v.index]);
+        });
+    });
+    return newD3;
+    //return self.d3;
+  }
+
+  self.setXValues = function(newValue) {
+
+    self.desiredNumberOfXValues = newValue;
+
+  }
+
+  return self;
+}
+
+util.inherits(D3Container, EventEmitter)
+
+exports.D3Container = D3Container;
+},{"util":5,"events":6,"./slice.js":4,"moment":8}],3:[function(require,module,exports){var moment = require('moment');
 
 function FeedConfig(data) {
     var self = this;
@@ -846,7 +862,88 @@ function FeedConfig(data) {
 }
 
 exports.FeedConfig = FeedConfig;
-},{"moment":7}],7:[function(require,module,exports){(function(){// moment.js
+},{"moment":8}],4:[function(require,module,exports){'use strict';
+
+var moment = require('moment');
+
+function Slice(data) {
+    var self = this;
+    self.words = null;
+    self.time = null;
+    if(data) {
+      var other;
+      if(typeof data === 'string')
+        other = JSON.parse(data);
+      else if(typeof data === 'object')
+        other = data;
+      else
+        throw new Error('Unsupported data type ' + typeof data);
+
+      self.words = other.words;
+      self.time = other.time;
+    }
+
+    self.addValue = function(word, count, source, panel) {
+      if(self.words === null)
+        self.words = [];
+      self.words.push({word:word, count:count, source:source, panel:panel});
+    };
+
+    self.setTime = function(t) {
+      self.time = t;
+    };
+
+    self.getTime = function(t) {
+      return self.time;
+    };
+
+    self.equals = function(other) {
+      self.checkValid();
+      other.checkValid();
+
+      if(self.time !== other.time)
+        return false;
+      if(self.words.length !== other.words.length)
+        return false;
+
+      for(var v in self.words) {
+        if(self.words[v].word !== other.words[v].word)
+          return false;
+        if(self.words[v].count !== other.words[v].count)
+          return false;
+        if(self.words[v].source !== other.words[v].source)
+          return false;
+        if(self.words[v].panel !== other.words[v].panel)
+          return false;
+      }
+
+      return true;
+    };
+
+    self.checkValid = function() {
+      if(!self.words instanceof Array)
+        throw new Error('Values should be array');
+      if(!self.time instanceof String)
+        throw new Error('Timestamp should be string');
+    };
+
+    self.toJSON = function() {
+      self.checkValid();
+      return JSON.stringify({
+        time: self.time,
+        words: self.words
+      });
+    }
+
+    self.next = function() {
+      return self.words.pop();
+    };
+
+    return self;
+}
+
+exports.Slice = Slice;
+},{"moment":8}],8:[function(require,module,exports){(function(){// moment.js
 // version : 2.0.0
 // author : Tim Wood
 // license : MIT
