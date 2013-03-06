@@ -56,6 +56,10 @@ function Slice(data) {
       });
     }
 
+    self.next = function() {
+      return self.values.pop();
+    };
+
     return self;
 }
 

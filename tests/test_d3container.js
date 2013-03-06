@@ -1,5 +1,7 @@
+var moment = require('moment');
 var should = require('should');
 var d3container = require('../d3container.js');
+var slice = require('../slice.js');
 
 describe('d3container', function() {
     it('updates correctly single value', function() {
@@ -174,5 +176,34 @@ describe('d3container', function() {
       var updater = new d3container.D3Container();
       updater.on('updated', function() { done(); });
       updater.update('word1', 1, 10);
+    });
+
+    it('can update from a slice', function() {
+      var updater = new d3container.D3Container();
+      var s1 = new slice.Slice();
+      var word = 'testword';
+      var count = 10;
+      var source = 'http://somewhere';
+      var panel = 5;
+      var timestamp = '' + moment();
+
+      s1.setTimestamp(timestamp);
+      s1.addValue(word, count, source, panel);
+
+      updater.updateSlice(s1);
+
+      JSON.stringify(updater.current()).should.equal(
+        JSON.stringify(
+          [
+            {
+              key: word,
+              values:
+              [
+                {x:timestamp, y:count},
+              ]
+            },
+          ]
+        )
+      );
     });
 });

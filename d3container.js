@@ -2,6 +2,7 @@
 
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
+var slice = require('./slice.js');
 
 function D3Container(desiredNumberOfXValues) {
   var self = this;
@@ -35,6 +36,9 @@ function D3Container(desiredNumberOfXValues) {
     return self.xIndexes[x];
   };
 
+  // key is word
+  // x is timestamp
+  // y is count
   self.update = function(key, x, y) {
     var keyIndex = self.getKeyIndex(key);
     var xIndex = self.getXIndex(key, keyIndex, x);
@@ -42,6 +46,15 @@ function D3Container(desiredNumberOfXValues) {
     self.d3[keyIndex].values[xIndex].y = y;
     if(!self.desiredNumberOfXValues || self.xValues.length >= self.desiredNumberOfXValues) {
       this.emit('updated');
+    }
+  };
+
+  self.updateSlice = function(s) {
+    if(!s instanceof slice.Slice)
+      throw new Error('not a slice');
+    var v;
+    while(v = s.next()) {
+      self.update(v.word, s.timestamp, v.count);
     }
   };
 

@@ -60,7 +60,6 @@ describe('slice', function() {
     s1.equals(s2).should.be.false;
   });
 
-
   it('different count', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
@@ -92,5 +91,4 @@ describe('slice', function() {
     s2.setTimestamp(timestamp);
     s1.equals(s2).should.be.false;
   });
-
 });

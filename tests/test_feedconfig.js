@@ -1,5 +1,5 @@
 var should = require('should');
-
+var slice = require('../slice.js');
 var feedconfig = require('../feedconfig.js');
 
 describe('feedconfig', function() {
