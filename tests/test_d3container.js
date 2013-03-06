@@ -185,9 +185,9 @@ describe('d3container', function() {
       var count = 10;
       var source = 'http://somewhere';
       var panel = 5;
-      var timestamp = '' + moment();
+      var timestamp = parseInt('' + moment());
 
-      s1.setTimestamp(timestamp);
+      s1.setTime(timestamp);
       s1.addValue(word, count, source, panel);
 
       updater.updateSlice(s1);
@@ -199,11 +199,20 @@ describe('d3container', function() {
               key: word,
               values:
               [
-                {x:timestamp, y:count},
+                {x: timestamp, y:count},
               ]
             },
           ]
         )
       );
+    });
+
+    it('can update from a slice', function(done) {
+      var updater = new d3container.D3Container();
+      try {
+        updater.updateSlice("String object");
+      } catch(e) {
+        done();
+      }
     });
 });

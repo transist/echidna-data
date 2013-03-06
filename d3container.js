@@ -3,6 +3,7 @@
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var slice = require('./slice.js');
+var moment = require('moment');
 
 function D3Container(desiredNumberOfXValues) {
   var self = this;
@@ -50,11 +51,11 @@ function D3Container(desiredNumberOfXValues) {
   };
 
   self.updateSlice = function(s) {
-    if(!s instanceof slice.Slice)
+    if(!(s instanceof slice.Slice))
       throw new Error('not a slice');
     var v;
     while(v = s.next()) {
-      self.update(v.word, s.timestamp, v.count);
+      self.update(v.word, s.getTime(), v.count);
     }
   };
 

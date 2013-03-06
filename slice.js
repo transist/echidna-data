@@ -1,40 +1,55 @@
 'use strict';
 
+var moment = require('moment');
+
 function Slice(data) {
     var self = this;
-    self.values = null;
-    self.timestamp = null;
+    self.words = null;
+    self.time = null;
     if(data) {
-      var other = JSON.parse(data);
-      self.values = other.values;
-      self.timestamp = other.timestamp;
+      var other;
+      if(typeof data === 'string')
+        other = JSON.parse(data);
+      else if(typeof data === 'object')
+        other = data;
+      else
+        throw new Error('Unsupported data type ' + typeof data);
+
+      self.words = other.words;
+      self.time = other.time;
     }
+
     self.addValue = function(word, count, source, panel) {
-      if(self.values === null)
-        self.values = [];
-      self.values.push({word:word, count:count, source:source, panel:panel});
+      if(self.words === null)
+        self.words = [];
+      self.words.push({word:word, count:count, source:source, panel:panel});
     };
-    self.setTimestamp = function(timestamp) {
-      self.timestamp = timestamp;
+
+    self.setTime = function(t) {
+      self.time = t;
+    };
+
+    self.getTime = function(t) {
+      return self.time;
     };
 
     self.equals = function(other) {
       self.checkValid();
       other.checkValid();
 
-      if(self.timestamp !== other.timestamp)
+      if(self.time !== other.time)
         return false;
-      if(self.values.length !== other.values.length)
+      if(self.words.length !== other.words.length)
         return false;
 
-      for(var v in self.values) {
-        if(self.values[v].word !== other.values[v].word)
+      for(var v in self.words) {
+        if(self.words[v].word !== other.words[v].word)
           return false;
-        if(self.values[v].count !== other.values[v].count)
+        if(self.words[v].count !== other.words[v].count)
           return false;
-        if(self.values[v].source !== other.values[v].source)
+        if(self.words[v].source !== other.words[v].source)
           return false;
-        if(self.values[v].panel !== other.values[v].panel)
+        if(self.words[v].panel !== other.words[v].panel)
           return false;
       }
 
@@ -42,22 +57,22 @@ function Slice(data) {
     };
 
     self.checkValid = function() {
-      if(!self.values instanceof Array)
+      if(!self.words instanceof Array)
         throw new Error('Values should be array');
-      if(!self.timestamp instanceof String)
+      if(!self.time instanceof String)
         throw new Error('Timestamp should be string');
     };
 
     self.toJSON = function() {
       self.checkValid();
       return JSON.stringify({
-        timestamp: self.timestamp,
-        values: self.values
+        time: self.time,
+        words: self.words
       });
     }
 
     self.next = function() {
-      return self.values.pop();
+      return self.words.pop();
     };
 
     return self;

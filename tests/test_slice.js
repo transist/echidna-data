@@ -12,7 +12,7 @@ describe('slice', function() {
   it('object construction', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
-    s1.setTimestamp('' + moment());
+    s1.setTime('' + moment());
     s1.toJSON().should.be.instanceof.String;
   });
 
@@ -34,7 +34,7 @@ describe('slice', function() {
   it('to/from JSON', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
-    s1.setTimestamp(timestamp);
+    s1.setTime(timestamp);
     var s2 = new slice.Slice(s1.toJSON());
     s1.equals(s2).should.be.true;
   });
@@ -42,20 +42,20 @@ describe('slice', function() {
   it('same setting equals', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
-    s1.setTimestamp(timestamp);
+    s1.setTime(timestamp);
     var s2 = new slice.Slice();
     s2.addValue(word, count, source, panel);
-    s2.setTimestamp(timestamp);
+    s2.setTime(timestamp);
     s2.equals(s2).should.be.true;
   });
 
   it('different word', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
-    s1.setTimestamp(timestamp);
+    s1.setTime(timestamp);
     var s2 = new slice.Slice();
     s2.addValue(word + '1', count, source, panel);
-    s2.setTimestamp(timestamp);
+    s2.setTime(timestamp);
 
     s1.equals(s2).should.be.false;
   });
@@ -63,10 +63,10 @@ describe('slice', function() {
   it('different count', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
-    s1.setTimestamp(timestamp);
+    s1.setTime(timestamp);
     var s2 = new slice.Slice();
     s2.addValue(word, count + 1, source, panel);
-    s2.setTimestamp(timestamp);
+    s2.setTime(timestamp);
 
     s1.equals(s2).should.be.false;
   });
@@ -74,10 +74,10 @@ describe('slice', function() {
   it('different source', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
-    s1.setTimestamp(timestamp);
+    s1.setTime(timestamp);
     var s2 = new slice.Slice();
     s2.addValue(word, count, source + '1', panel);
-    s2.setTimestamp(timestamp);
+    s2.setTime(timestamp);
 
     s1.equals(s2).should.be.false;
   });
@@ -85,10 +85,18 @@ describe('slice', function() {
   it('different panel', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
-    s1.setTimestamp(timestamp);
+    s1.setTime(timestamp);
     var s2 = new slice.Slice();
     s2.addValue(word, count, source, panel + 1);
-    s2.setTimestamp(timestamp);
+    s2.setTime(timestamp);
     s1.equals(s2).should.be.false;
+  });
+
+  it('also parse object directory', function() {
+    var s1 = new slice.Slice();
+    s1.addValue(word, count, source, panel);
+    s1.setTime(timestamp);
+    var s2 = new slice.Slice(s1);
+    s1.equals(s2).should.be.true;
   });
 });
