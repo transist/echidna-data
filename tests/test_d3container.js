@@ -185,9 +185,8 @@ describe('d3container', function() {
       var count = 10;
       var source = 'http://somewhere';
       var panel = 5;
-      var timestamp = parseInt('' + moment());
-
-      s1.setTime(timestamp);
+      var timestamp = moment().utc();
+      s1.setTime(timestamp.toJSON());
       s1.addValue(word, count, source, panel);
 
       updater.updateSlice(s1);
@@ -199,7 +198,7 @@ describe('d3container', function() {
               key: word,
               values:
               [
-                {x: timestamp, y:count},
+                {x: timestamp.unix(), y:count},
               ]
             },
           ]
@@ -207,12 +206,24 @@ describe('d3container', function() {
       );
     });
 
-    it('can update from a slice', function(done) {
+    it('fails on invalid parameter that is not slice.Slice', function(done) {
       var updater = new d3container.D3Container();
       try {
         updater.updateSlice("String object");
       } catch(e) {
         done();
       }
+    });
+
+    it('moment works as expected and keeps the timezone information', function() {
+      // https://github.com/timrwood/moment/pull/646
+      var t = moment().utc();
+      t.unix().should.equal(moment(t.toJSON()).unix());
+    });
+
+    it('moment and Date.parse compatible', function() {
+      // https://github.com/timrwood/moment/pull/646
+      var t = moment().utc();
+      t.valueOf().should.equal(Date.parse(t.toJSON()));
     });
 });

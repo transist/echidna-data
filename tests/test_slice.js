@@ -7,12 +7,12 @@ describe('slice', function() {
   var count = 10;
   var source = 'http://somewhere';
   var panel = 5;
-  var timestamp = '' + moment();
+  var timestamp = moment().toJSON();
 
   it('object construction', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
-    s1.setTime('' + moment());
+    s1.setTime(moment().toJSON());
     s1.toJSON().should.be.instanceof.String;
   });
 

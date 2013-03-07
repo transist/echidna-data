@@ -1,7 +1,5 @@
 'use strict';
 
-var moment = require('moment');
-
 function Slice(data) {
     var self = this;
     self.words = null;
@@ -61,6 +59,8 @@ function Slice(data) {
         throw new Error('Values should be array');
       if(!self.time instanceof String)
         throw new Error('Timestamp should be string');
+      if(!self.words.length === 0)
+        throw new Error('Empty array of words');
     };
 
     self.toJSON = function() {

@@ -38,7 +38,7 @@ function D3Container(desiredNumberOfXValues) {
   };
 
   // key is word
-  // x is timestamp
+  // x is timestamp in unix time
   // y is count
   self.update = function(key, x, y) {
     var keyIndex = self.getKeyIndex(key);
@@ -55,7 +55,7 @@ function D3Container(desiredNumberOfXValues) {
       throw new Error('not a slice');
     var v;
     while(v = s.next()) {
-      self.update(v.word, s.getTime(), v.count);
+      self.update(v.word, moment(s.getTime()).unix(), v.count);
     }
   };
 
