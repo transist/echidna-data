@@ -55,12 +55,12 @@ function Slice(data) {
     };
 
     self.checkValid = function() {
-      if(!self.words instanceof Array)
-        throw new Error('Values should be array');
-      if(!self.time instanceof String)
-        throw new Error('Timestamp should be string');
-      if(!self.words.length === 0)
-        throw new Error('Empty array of words');
+      if(!(self.words instanceof Array))
+        throw new Error('Values should be array, is ' + self.words);
+      if(!(typeof self.time === 'string'))
+        throw new Error('Timestamp should be string, is: ' + self.time);
+      if((self.words.length === 0))
+        throw new Error('Empty array of words ');
     };
 
     self.toJSON = function() {

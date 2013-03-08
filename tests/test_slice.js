@@ -99,4 +99,31 @@ describe('slice', function() {
     var s2 = new slice.Slice(s1);
     s1.equals(s2).should.be.true;
   });
+
+  it('checkValid on valid object', function() {
+    var s1 = new slice.Slice();
+    s1.addValue(word, count, source, panel);
+    s1.setTime(timestamp);
+    s1.checkValid();
+  });
+
+  it('checkValid on missing timestamp', function(done) {
+    var s1 = new slice.Slice();
+    s1.addValue(word, count, source, panel);
+    try {
+      s1.checkValid();
+    } catch(e) {
+      done();
+    }
+  });
+
+  it('checkValid on empty word list', function(done) {
+    var s1 = new slice.Slice();
+    s1.setTime(timestamp);
+    try {
+      s1.checkValid();
+    } catch(e) {
+      done();
+    }
+  });
 });
