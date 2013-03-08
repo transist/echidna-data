@@ -198,7 +198,7 @@ describe('d3container', function() {
               key: word,
               values:
               [
-                {x: timestamp.unix(), y:count},
+                {x: timestamp.valueOf(), y:count},
               ]
             },
           ]
@@ -234,8 +234,10 @@ describe('d3container', function() {
               key: word,
               values:
               [
-                {x: timestamp1.unix(), y:count},
-                {x: timestamp2.unix(), y:count},
+                // moment.valueOf : milliseconds
+                // moment.unix() : seconds
+                {x: timestamp1.valueOf(), y:count},
+                {x: timestamp2.valueOf(), y:count},
               ]
             },
           ]

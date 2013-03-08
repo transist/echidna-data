@@ -24,6 +24,8 @@ function Slice(data) {
     };
 
     self.setTime = function(t) {
+      if(typeof t !== 'string')
+        throw new Error('time should be stored as ISO8601 string, is ' + typeof t);
       self.time = t;
     };
 

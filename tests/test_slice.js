@@ -127,4 +127,13 @@ describe('slice', function() {
       done();
     }
   });
+
+  it('numeric timestamp result in exception (should only accept string)', function(done) {
+    var s1 = new slice.Slice();
+    try {
+      s1.setTime(1362713986806);
+    } catch(e) {
+      done();
+    }
+  });
 });

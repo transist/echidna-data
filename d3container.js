@@ -55,7 +55,8 @@ function D3Container(desiredNumberOfXValues) {
       throw new Error('not a slice');
     var v;
     while(v = s.next()) {
-      var unixTime = moment(s.getTime()).unix();
+      //var unixTime = moment(s.getTime()).unix();
+      var unixTime = Date.parse(s.getTime());
       self.update(v.word, unixTime, v.count);
     }
   };
