@@ -16,12 +16,12 @@ describe('slice', function() {
     s1.toJSON().should.be.instanceof.String;
   });
 
-  it('construction', function() {
+  it('construction with no parameters', function() {
     var s1 = new slice.Slice();
     s1.should.not.be.null;
   });
 
-  it('construction', function() {
+  it('construction with a JSON string', function() {
     var s1 = new slice.Slice(JSON.stringify({
       word:'hello',
       count: 10,
@@ -92,7 +92,7 @@ describe('slice', function() {
     s1.equals(s2).should.be.false;
   });
 
-  it('also parse object directory', function() {
+  it('object copy', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
     s1.setTime(timestamp);
