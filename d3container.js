@@ -55,32 +55,40 @@ function D3Container(desiredNumberOfXValues) {
       throw new Error('not a slice');
     var v;
     while(v = s.next()) {
-      self.update(v.word, moment(s.getTime()).unix(), v.count);
+      var unixTime = moment(s.getTime()).unix();
+      self.update(v.word, unixTime, v.count);
     }
   };
 
   self.current = function() {
+    // xValues contain all possible x (timestamp)
     self.xValues.sort(function(a,b) {
       return a.x - b.x;
     });
 
+    // if we already have more than what this container needs, trim the list
     if(self.desiredNumberOfXValues && self.xValues.length > self.desiredNumberOfXValues) {
       self.xValues.splice(0, self.xValues.length - self.desiredNumberOfXValues);
     }
 
+    // create the [key:, values: [x:, y:]] datastructure
     var newD3 = [];
     self.d3.forEach(function(d3, j) {
         var o = {key: d3.key, values: []};
         newD3.push(o);
+        // for each of the potential x values
         self.xValues.forEach(function(v, i) {
-          if(d3.values[v.index] === undefined)
+          // if it doesn't exist, add it but with a y of zero
+          if(d3.values[v.index] === undefined) {
             o.values.push({x: v.x, y: 0});
-          else
-            o.values.push(d3.values[v.index]);
+          }
+          // else, use the x:, y: value as is
+          else {
+            o.values.push({x: d3.values[v.index].x, y: d3.values[v.index].y});
+          }
         });
     });
     return newD3;
-    //return self.d3;
   }
 
   self.setXValues = function(newValue) {

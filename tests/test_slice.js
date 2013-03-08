@@ -92,15 +92,16 @@ describe('slice', function() {
     s1.equals(s2).should.be.false;
   });
 
-  it('object copy', function() {
+  it('object copy and checkValid', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
     s1.setTime(timestamp);
     var s2 = new slice.Slice(s1);
     s1.equals(s2).should.be.true;
+    s2.checkValid();
   });
 
-  it('checkValid on valid object', function() {
+  it('checkValid on created object', function() {
     var s1 = new slice.Slice();
     s1.addValue(word, count, source, panel);
     s1.setTime(timestamp);
