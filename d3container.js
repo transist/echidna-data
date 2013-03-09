@@ -56,8 +56,10 @@ function D3Container(desiredNumberOfXValues) {
     var v;
     while(v = s.next()) {
       //var unixTime = moment(s.getTime()).unix();
-      var unixTime = Date.parse(s.getTime());
-      self.update(v.word, unixTime, v.count);
+      // console.log(s.getTime());
+      // var unixTime = Date.parse(s.getTime());
+      // console.log(unixTime);
+      self.update(v.word, s.getTime(), v.count);
     }
   };
 

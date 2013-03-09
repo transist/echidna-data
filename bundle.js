@@ -3,7 +3,7 @@ window.feedconfig =  require('./feedconfig');
 window.slicer =  require('./slice');
 
 console.log('Requires loaded - compiled by Browserify');
-},{"./feedconfig":2,"./d3container":3,"./slice":4}],4:[function(require,module,exports){'use strict';
+},{"./d3container":2,"./feedconfig":3,"./slice":4}],4:[function(require,module,exports){'use strict';
 
 function Slice(data) {
     var self = this;
@@ -29,6 +29,8 @@ function Slice(data) {
     };
 
     self.setTime = function(t) {
+      if(typeof t !== 'string')
+        throw new Error('time should be stored as ISO8601 string, is ' + typeof t);
       self.time = t;
     };
 
@@ -84,245 +86,7 @@ function Slice(data) {
 }
 
 exports.Slice = Slice;
-},{}],5:[function(require,module,exports){// shim for using process in browser
-
-var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-
-},{}],6:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
-
-var EventEmitter = exports.EventEmitter = process.EventEmitter;
-var isArray = typeof Array.isArray === 'function'
-    ? Array.isArray
-    : function (xs) {
-        return Object.prototype.toString.call(xs) === '[object Array]'
-    }
-;
-function indexOf (xs, x) {
-    if (xs.indexOf) return xs.indexOf(x);
-    for (var i = 0; i < xs.length; i++) {
-        if (x === xs[i]) return i;
-    }
-    return -1;
-}
-
-// By default EventEmitters will print a warning if more than
-// 10 listeners are added to it. This is a useful default which
-// helps finding memory leaks.
-//
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-var defaultMaxListeners = 10;
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!this._events) this._events = {};
-  this._events.maxListeners = n;
-};
-
-
-EventEmitter.prototype.emit = function(type) {
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events || !this._events.error ||
-        (isArray(this._events.error) && !this._events.error.length))
-    {
-      if (arguments[1] instanceof Error) {
-        throw arguments[1]; // Unhandled 'error' event
-      } else {
-        throw new Error("Uncaught, unspecified 'error' event.");
-      }
-      return false;
-    }
-  }
-
-  if (!this._events) return false;
-  var handler = this._events[type];
-  if (!handler) return false;
-
-  if (typeof handler == 'function') {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        var args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-    return true;
-
-  } else if (isArray(handler)) {
-    var args = Array.prototype.slice.call(arguments, 1);
-
-    var listeners = handler.slice();
-    for (var i = 0, l = listeners.length; i < l; i++) {
-      listeners[i].apply(this, args);
-    }
-    return true;
-
-  } else {
-    return false;
-  }
-};
-
-// EventEmitter is defined in src/node_events.cc
-// EventEmitter.prototype.emit() is also defined there.
-EventEmitter.prototype.addListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('addListener only takes instances of Function');
-  }
-
-  if (!this._events) this._events = {};
-
-  // To avoid recursion in the case that type == "newListeners"! Before
-  // adding it to the listeners, first emit "newListeners".
-  this.emit('newListener', type, listener);
-
-  if (!this._events[type]) {
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  } else if (isArray(this._events[type])) {
-
-    // Check for listener leak
-    if (!this._events[type].warned) {
-      var m;
-      if (this._events.maxListeners !== undefined) {
-        m = this._events.maxListeners;
-      } else {
-        m = defaultMaxListeners;
-      }
-
-      if (m && m > 0 && this._events[type].length > m) {
-        this._events[type].warned = true;
-        console.error('(node) warning: possible EventEmitter memory ' +
-                      'leak detected. %d listeners added. ' +
-                      'Use emitter.setMaxListeners() to increase limit.',
-                      this._events[type].length);
-        console.trace();
-      }
-    }
-
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  } else {
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  var self = this;
-  self.on(type, function g() {
-    self.removeListener(type, g);
-    listener.apply(this, arguments);
-  });
-
-  return this;
-};
-
-EventEmitter.prototype.removeListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('removeListener only takes instances of Function');
-  }
-
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (!this._events || !this._events[type]) return this;
-
-  var list = this._events[type];
-
-  if (isArray(list)) {
-    var i = indexOf(list, listener);
-    if (i < 0) return this;
-    list.splice(i, 1);
-    if (list.length == 0)
-      delete this._events[type];
-  } else if (this._events[type] === listener) {
-    delete this._events[type];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  if (arguments.length === 0) {
-    this._events = {};
-    return this;
-  }
-
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (type && this._events && this._events[type]) this._events[type] = null;
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  if (!this._events) this._events = {};
-  if (!this._events[type]) this._events[type] = [];
-  if (!isArray(this._events[type])) {
-    this._events[type] = [this._events[type]];
-  }
-  return this._events[type];
-};
-
-})(require("__browserify_process"))
-},{"__browserify_process":5}],7:[function(require,module,exports){var events = require('events');
+},{}],5:[function(require,module,exports){var events = require('events');
 
 exports.isArray = isArray;
 exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
@@ -674,7 +438,353 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":6}],2:[function(require,module,exports){var moment = require('moment');
+},{"events":6}],7:[function(require,module,exports){// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            if (ev.source === window && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],6:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+
+var EventEmitter = exports.EventEmitter = process.EventEmitter;
+var isArray = typeof Array.isArray === 'function'
+    ? Array.isArray
+    : function (xs) {
+        return Object.prototype.toString.call(xs) === '[object Array]'
+    }
+;
+function indexOf (xs, x) {
+    if (xs.indexOf) return xs.indexOf(x);
+    for (var i = 0; i < xs.length; i++) {
+        if (x === xs[i]) return i;
+    }
+    return -1;
+}
+
+// By default EventEmitters will print a warning if more than
+// 10 listeners are added to it. This is a useful default which
+// helps finding memory leaks.
+//
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+var defaultMaxListeners = 10;
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!this._events) this._events = {};
+  this._events.maxListeners = n;
+};
+
+
+EventEmitter.prototype.emit = function(type) {
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events || !this._events.error ||
+        (isArray(this._events.error) && !this._events.error.length))
+    {
+      if (arguments[1] instanceof Error) {
+        throw arguments[1]; // Unhandled 'error' event
+      } else {
+        throw new Error("Uncaught, unspecified 'error' event.");
+      }
+      return false;
+    }
+  }
+
+  if (!this._events) return false;
+  var handler = this._events[type];
+  if (!handler) return false;
+
+  if (typeof handler == 'function') {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        var args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+    return true;
+
+  } else if (isArray(handler)) {
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    var listeners = handler.slice();
+    for (var i = 0, l = listeners.length; i < l; i++) {
+      listeners[i].apply(this, args);
+    }
+    return true;
+
+  } else {
+    return false;
+  }
+};
+
+// EventEmitter is defined in src/node_events.cc
+// EventEmitter.prototype.emit() is also defined there.
+EventEmitter.prototype.addListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('addListener only takes instances of Function');
+  }
+
+  if (!this._events) this._events = {};
+
+  // To avoid recursion in the case that type == "newListeners"! Before
+  // adding it to the listeners, first emit "newListeners".
+  this.emit('newListener', type, listener);
+
+  if (!this._events[type]) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  } else if (isArray(this._events[type])) {
+
+    // Check for listener leak
+    if (!this._events[type].warned) {
+      var m;
+      if (this._events.maxListeners !== undefined) {
+        m = this._events.maxListeners;
+      } else {
+        m = defaultMaxListeners;
+      }
+
+      if (m && m > 0 && this._events[type].length > m) {
+        this._events[type].warned = true;
+        console.error('(node) warning: possible EventEmitter memory ' +
+                      'leak detected. %d listeners added. ' +
+                      'Use emitter.setMaxListeners() to increase limit.',
+                      this._events[type].length);
+        console.trace();
+      }
+    }
+
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  } else {
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  var self = this;
+  self.on(type, function g() {
+    self.removeListener(type, g);
+    listener.apply(this, arguments);
+  });
+
+  return this;
+};
+
+EventEmitter.prototype.removeListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('removeListener only takes instances of Function');
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (!this._events || !this._events[type]) return this;
+
+  var list = this._events[type];
+
+  if (isArray(list)) {
+    var i = indexOf(list, listener);
+    if (i < 0) return this;
+    list.splice(i, 1);
+    if (list.length == 0)
+      delete this._events[type];
+  } else if (this._events[type] === listener) {
+    delete this._events[type];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  if (arguments.length === 0) {
+    this._events = {};
+    return this;
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (type && this._events && this._events[type]) this._events[type] = null;
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  if (!this._events) this._events = {};
+  if (!this._events[type]) this._events[type] = [];
+  if (!isArray(this._events[type])) {
+    this._events[type] = [this._events[type]];
+  }
+  return this._events[type];
+};
+
+})(require("__browserify_process"))
+},{"__browserify_process":7}],2:[function(require,module,exports){"use strict";
+
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
+var slice = require('./slice.js');
+var moment = require('moment');
+
+function D3Container(desiredNumberOfXValues) {
+  var self = this;
+
+  self.d3 = [];
+  self.keyToIndexes = {};
+  self.xIndexes = {};
+  self.xValues = [];
+  self.maxIndex = 0;
+  self.desiredNumberOfXValues = desiredNumberOfXValues;
+
+  self.getKeyIndex = function(key) {
+    // if does not exist, initialize
+    if(self.keyToIndexes[key] === undefined) {
+      self.keyToIndexes[key] = {};
+      self.keyToIndexes[key].keyIndex = self.d3.length;
+      self.keyToIndexes[key].xIndexes = {};
+      self.d3.push({key: key, values: []});
+    }
+    return self.keyToIndexes[key].keyIndex;
+  };
+
+  self.getXIndex = function(key, keyIndex, x) {
+    if(self.xIndexes[x] === undefined) {
+      self.xIndexes[x] = self.maxIndex++;
+      self.xValues.push({x: x, index: self.xIndexes[x]});
+    }
+    if(self.d3[keyIndex].values[self.xIndexes[x]] === undefined) {
+      self.d3[keyIndex].values[self.xIndexes[x]] = {x:-1, y:-1};
+    }
+    return self.xIndexes[x];
+  };
+
+  // key is word
+  // x is timestamp in unix time
+  // y is count
+  self.update = function(key, x, y) {
+    var keyIndex = self.getKeyIndex(key);
+    var xIndex = self.getXIndex(key, keyIndex, x);
+    self.d3[keyIndex].values[xIndex].x = x;
+    self.d3[keyIndex].values[xIndex].y = y;
+    if(!self.desiredNumberOfXValues || self.xValues.length >= self.desiredNumberOfXValues) {
+      this.emit('updated');
+    }
+  };
+
+  self.updateSlice = function(s) {
+    if(!(s instanceof slice.Slice))
+      throw new Error('not a slice');
+    var v;
+    while(v = s.next()) {
+      //var unixTime = moment(s.getTime()).unix();
+      // console.log(s.getTime());
+      // var unixTime = Date.parse(s.getTime());
+      // console.log(unixTime);
+      self.update(v.word, s.getTime(), v.count);
+    }
+  };
+
+  self.current = function() {
+    // xValues contain all possible x (timestamp)
+    self.xValues.sort(function(a,b) {
+      return a.x - b.x;
+    });
+
+    // if we already have more than what this container needs, trim the list
+    if(self.desiredNumberOfXValues && self.xValues.length > self.desiredNumberOfXValues) {
+      self.xValues.splice(0, self.xValues.length - self.desiredNumberOfXValues);
+    }
+
+    // create the [key:, values: [x:, y:]] datastructure
+    var newD3 = [];
+    self.d3.forEach(function(d3, j) {
+        var o = {key: d3.key, values: []};
+        newD3.push(o);
+        // for each of the potential x values
+        self.xValues.forEach(function(v, i) {
+          // if it doesn't exist, add it but with a y of zero
+          if(d3.values[v.index] === undefined) {
+            o.values.push({x: v.x, y: 0});
+          }
+          // else, use the x:, y: value as is
+          else {
+            o.values.push({x: d3.values[v.index].x, y: d3.values[v.index].y});
+          }
+        });
+    });
+    return newD3;
+  }
+
+  self.setXValues = function(newValue) {
+
+    self.desiredNumberOfXValues = newValue;
+
+  }
+
+  return self;
+}
+
+util.inherits(D3Container, EventEmitter)
+
+exports.D3Container = D3Container;
+},{"util":5,"events":6,"./slice.js":4,"moment":8}],3:[function(require,module,exports){var moment = require('moment');
 
 function FeedConfig(data) {
     var self = this;
@@ -846,113 +956,7 @@ function FeedConfig(data) {
 }
 
 exports.FeedConfig = FeedConfig;
-},{"moment":8}],3:[function(require,module,exports){"use strict";
-
-var util = require('util');
-var EventEmitter = require('events').EventEmitter;
-var slice = require('./slice.js');
-var moment = require('moment');
-
-function D3Container(desiredNumberOfXValues) {
-  var self = this;
-
-  self.d3 = [];
-  self.keyToIndexes = {};
-  self.xIndexes = {};
-  self.xValues = [];
-  self.maxIndex = 0;
-  self.desiredNumberOfXValues = desiredNumberOfXValues;
-
-  self.getKeyIndex = function(key) {
-    // if does not exist, initialize
-    if(self.keyToIndexes[key] === undefined) {
-      self.keyToIndexes[key] = {};
-      self.keyToIndexes[key].keyIndex = self.d3.length;
-      self.keyToIndexes[key].xIndexes = {};
-      self.d3.push({key: key, values: []});
-    }
-    return self.keyToIndexes[key].keyIndex;
-  };
-
-  self.getXIndex = function(key, keyIndex, x) {
-    if(self.xIndexes[x] === undefined) {
-      self.xIndexes[x] = self.maxIndex++;
-      self.xValues.push({x: x, index: self.xIndexes[x]});
-    }
-    if(self.d3[keyIndex].values[self.xIndexes[x]] === undefined) {
-      self.d3[keyIndex].values[self.xIndexes[x]] = {x:-1, y:-1};
-    }
-    return self.xIndexes[x];
-  };
-
-  // key is word
-  // x is timestamp in unix time
-  // y is count
-  self.update = function(key, x, y) {
-    var keyIndex = self.getKeyIndex(key);
-    var xIndex = self.getXIndex(key, keyIndex, x);
-    self.d3[keyIndex].values[xIndex].x = x;
-    self.d3[keyIndex].values[xIndex].y = y;
-    if(!self.desiredNumberOfXValues || self.xValues.length >= self.desiredNumberOfXValues) {
-      this.emit('updated');
-    }
-  };
-
-  self.updateSlice = function(s) {
-    if(!(s instanceof slice.Slice))
-      throw new Error('not a slice');
-    var v;
-    while(v = s.next()) {
-      //var unixTime = moment(s.getTime()).unix();
-      var unixTime = Date.parse(s.getTime());
-      self.update(v.word, unixTime, v.count);
-    }
-  };
-
-  self.current = function() {
-    // xValues contain all possible x (timestamp)
-    self.xValues.sort(function(a,b) {
-      return a.x - b.x;
-    });
-
-    // if we already have more than what this container needs, trim the list
-    if(self.desiredNumberOfXValues && self.xValues.length > self.desiredNumberOfXValues) {
-      self.xValues.splice(0, self.xValues.length - self.desiredNumberOfXValues);
-    }
-
-    // create the [key:, values: [x:, y:]] datastructure
-    var newD3 = [];
-    self.d3.forEach(function(d3, j) {
-        var o = {key: d3.key, values: []};
-        newD3.push(o);
-        // for each of the potential x values
-        self.xValues.forEach(function(v, i) {
-          // if it doesn't exist, add it but with a y of zero
-          if(d3.values[v.index] === undefined) {
-            o.values.push({x: v.x, y: 0});
-          }
-          // else, use the x:, y: value as is
-          else {
-            o.values.push({x: d3.values[v.index].x, y: d3.values[v.index].y});
-          }
-        });
-    });
-    return newD3;
-  }
-
-  self.setXValues = function(newValue) {
-
-    self.desiredNumberOfXValues = newValue;
-
-  }
-
-  return self;
-}
-
-util.inherits(D3Container, EventEmitter)
-
-exports.D3Container = D3Container;
-},{"util":7,"events":6,"./slice.js":4,"moment":8}],8:[function(require,module,exports){(function(){// moment.js
+},{"moment":8}],8:[function(require,module,exports){(function(){// moment.js
 // version : 2.0.0
 // author : Tim Wood
 // license : MIT
