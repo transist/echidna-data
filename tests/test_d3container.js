@@ -4,6 +4,14 @@ var d3container = require('../d3container.js');
 var slice = require('../slice.js');
 
 describe('d3container', function() {
+
+    var s1 = new slice.Slice();
+    var word = 'testword';
+    var count = 10;
+    var source = 'http://somewhere';
+    var panel = 5;
+    var timestamp = moment().utc();
+
     it('updates correctly single value', function() {
       var updater = new d3container.D3Container();
       updater.update('word', 'xvalue', 1);
@@ -180,12 +188,7 @@ describe('d3container', function() {
 
     it('can update from a slice', function() {
       var updater = new d3container.D3Container();
-      var s1 = new slice.Slice();
-      var word = 'testword';
-      var count = 10;
-      var source = 'http://somewhere';
-      var panel = 5;
-      var timestamp = moment().utc();
+
       s1.setTime(timestamp.toJSON());
       s1.addValue(word, count, source, panel);
 
@@ -206,15 +209,34 @@ describe('d3container', function() {
       );
     });
 
+    it('can update from a slice with a partial timestamp', function() {
+      var updater = new d3container.D3Container();
+      var partial_timestamp = '2013-03-12T01';
+      s1.setTime(partial_timestamp);
+      s1.addValue(word, count, source, panel);
+
+      updater.updateSlice(s1);
+
+      JSON.stringify(updater.current()).should.equal(
+        JSON.stringify(
+          [
+            {
+              key: word,
+              values:
+              [
+                {x: moment(partial_timestamp).valueOf(), y:count},
+              ]
+            },
+          ]
+        )
+      );
+    });
+
 
     it('can update from two slices', function() {
       var updater = new d3container.D3Container();
       var s1 = new slice.Slice();
       var s2 = new slice.Slice();
-      var word = 'testword';
-      var count = 10;
-      var source = 'http://somewhere';
-      var panel = 5;
       var timestamp1 = moment().utc();
       var timestamp2 = moment().add('seconds', 1).utc();
 
@@ -238,6 +260,39 @@ describe('d3container', function() {
                 // moment.unix() : seconds
                 {x: timestamp1.valueOf(), y:count},
                 {x: timestamp2.valueOf(), y:count},
+              ]
+            },
+          ]
+        )
+      );
+    });
+
+    it('can update with one slice that has no words', function() {
+      var updater = new d3container.D3Container();
+      var s1 = new slice.Slice();
+      var s2 = new slice.Slice();
+      var timestamp1 = moment().utc();
+      var timestamp2 = moment().add('seconds', 1).utc();
+
+      s1.setTime(timestamp1.toJSON());
+      s1.addValue(word, count, source, panel);
+
+      s2.setTime(timestamp2.toJSON());
+
+      updater.updateSlice(s1);
+      updater.updateSlice(s2);
+
+      JSON.stringify(updater.current()).should.equal(
+        JSON.stringify(
+          [
+            {
+              key: word,
+              values:
+              [
+                // moment.valueOf : milliseconds
+                // moment.unix() : seconds
+                {x: timestamp1.valueOf(), y:count},
+                {x: timestamp2.valueOf(), y:0},
               ]
             },
           ]
