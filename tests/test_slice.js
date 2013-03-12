@@ -118,14 +118,10 @@ describe('slice', function() {
     }
   });
 
-  it('checkValid on empty word list', function(done) {
+  it('checkValid on empty word list is still valid', function() {
     var s1 = new slice.Slice();
     s1.setTime(timestamp);
-    try {
-      s1.checkValid();
-    } catch(e) {
-      done();
-    }
+    s1.checkValid();
   });
 
   it('numeric timestamp result in exception (should only accept string)', function(done) {

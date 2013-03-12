@@ -245,6 +245,42 @@ describe('d3container', function() {
       );
     });
 
+    it('can update with one slice that has no words', function() {
+      var updater = new d3container.D3Container();
+      var s1 = new slice.Slice();
+      var s2 = new slice.Slice();
+      var word = 'testword';
+      var count = 10;
+      var source = 'http://somewhere';
+      var panel = 5;
+      var timestamp1 = moment().utc();
+      var timestamp2 = moment().add('seconds', 1).utc();
+
+      s1.setTime(timestamp1.toJSON());
+      s1.addValue(word, count, source, panel);
+
+      s2.setTime(timestamp2.toJSON());
+
+      updater.updateSlice(s1);
+      updater.updateSlice(s2);
+
+      JSON.stringify(updater.current()).should.equal(
+        JSON.stringify(
+          [
+            {
+              key: word,
+              values:
+              [
+                // moment.valueOf : milliseconds
+                // moment.unix() : seconds
+                {x: timestamp1.valueOf(), y:count},
+                {x: timestamp2.valueOf(), y:0},
+              ]
+            },
+          ]
+        )
+      );
+    });
     it('fails on invalid parameter that is not slice.Slice', function(done) {
       var updater = new d3container.D3Container();
       try {
