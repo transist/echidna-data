@@ -1,13 +1,15 @@
-;(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){window.d3container =  require('./d3container');
+;(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){
+window.d3container =  require('./d3container');
 window.feedconfig =  require('./feedconfig');
 window.slicer =  require('./slice');
 
 console.log('Requires loaded - compiled by Browserify');
-},{"./d3container":2,"./feedconfig":3,"./slice":4}],4:[function(require,module,exports){'use strict';
+},{"./d3container":2,"./feedconfig":3,"./slice":4}],4:[function(require,module,exports){
+'use strict';
 
 function Slice(data) {
     var self = this;
-    self.words = null;
+    self.words = [];
     self.time = null;
     if(data) {
       var other;
@@ -66,8 +68,9 @@ function Slice(data) {
         throw new Error('Values should be array, is ' + self.words);
       if(!(typeof self.time === 'string'))
         throw new Error('Timestamp should be string, is: ' + self.time);
-      if((self.words.length === 0))
-        throw new Error('Empty array of words ');
+      //in some cases, we may indeed have no words
+      //if((self.words.length === 0))
+      //  throw new Error('Empty array of words ');
     };
 
     self.toJSON = function() {
@@ -86,7 +89,8 @@ function Slice(data) {
 }
 
 exports.Slice = Slice;
-},{}],5:[function(require,module,exports){var events = require('events');
+},{}],5:[function(require,module,exports){
+var events = require('events');
 
 exports.isArray = isArray;
 exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
@@ -438,7 +442,8 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":6}],7:[function(require,module,exports){// shim for using process in browser
+},{"events":6}],7:[function(require,module,exports){
+// shim for using process in browser
 
 var process = module.exports = {};
 
@@ -491,7 +496,8 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],6:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+},{}],6:[function(require,module,exports){
+(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
 var isArray = typeof Array.isArray === 'function'
@@ -676,7 +682,8 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":7}],2:[function(require,module,exports){"use strict";
+},{"__browserify_process":7}],2:[function(require,module,exports){
+"use strict";
 
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
@@ -731,13 +738,19 @@ function D3Container(desiredNumberOfXValues) {
   self.updateSlice = function(s) {
     if(!(s instanceof slice.Slice))
       throw new Error('not a slice');
-    var v;
-    while(v = s.next()) {
-      //var unixTime = moment(s.getTime()).unix();
-      // console.log(s.getTime());
-      // var unixTime = Date.parse(s.getTime());
-      // console.log(unixTime);
-      self.update(v.word, s.getTime(), v.count);
+    // we use moment instead of Date.parse as the
+    // moment parser is more forgiving and accepts
+    // timestamp such as 2013-03-12T01
+    var unixTime = moment(s.getTime()).valueOf();
+    if(s.words.length > 0) {
+      var v;
+      while(v = s.next()) {
+        self.update(v.word, unixTime, v.count);
+      }
+    } else {
+      // we have no words for this time value, but we still want
+      // to keep track of the timestamp so that we have no "holes"
+      self.update(null, unixTime, 0);
     }
   };
 
@@ -755,6 +768,10 @@ function D3Container(desiredNumberOfXValues) {
     // create the [key:, values: [x:, y:]] datastructure
     var newD3 = [];
     self.d3.forEach(function(d3, j) {
+        if(!d3.key) {
+          // in the case where we had no words for a particular timevalue
+          return;
+        }
         var o = {key: d3.key, values: []};
         newD3.push(o);
         // for each of the potential x values
@@ -784,7 +801,8 @@ function D3Container(desiredNumberOfXValues) {
 util.inherits(D3Container, EventEmitter)
 
 exports.D3Container = D3Container;
-},{"util":5,"events":6,"./slice.js":4,"moment":8}],3:[function(require,module,exports){var moment = require('moment');
+},{"util":5,"events":6,"./slice.js":4,"moment":8}],3:[function(require,module,exports){
+var moment = require('moment');
 
 function FeedConfig(data) {
     var self = this;
@@ -891,6 +909,7 @@ function FeedConfig(data) {
       self.setSampling(sampling);
     };
 
+
     self.toJSON = function() {
       if(self.type === 'historic') {
         return JSON.stringify({
@@ -950,13 +969,22 @@ function FeedConfig(data) {
         self.end = null;
       }
     }
-    self.setData(data);
+    // self.setData(data);
+
+    self.setToDefault = function() {
+      
+      self.setDemographics("Both","All","All");
+      self.setRealtime("second", 10);
+      self.setWordCount(10);
+
+    }
 
     return self;
 }
 
 exports.FeedConfig = FeedConfig;
-},{"moment":8}],8:[function(require,module,exports){(function(){// moment.js
+},{"moment":8}],8:[function(require,module,exports){
+(function(){// moment.js
 // version : 2.0.0
 // author : Tim Wood
 // license : MIT
@@ -2358,4 +2386,5 @@ exports.FeedConfig = FeedConfig;
 }).call(this);
 
 })()
-},{}]},{},[1]);
+},{}]},{},[1])
+;

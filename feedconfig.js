@@ -105,6 +105,7 @@ function FeedConfig(data) {
       self.setSampling(sampling);
     };
 
+
     self.toJSON = function() {
       if(self.type === 'historic') {
         return JSON.stringify({
@@ -164,8 +165,17 @@ function FeedConfig(data) {
         self.end = null;
       }
     }
-    self.setData(data);
 
+    self.setToDefault = function() {
+      
+      self.setDemographics("Both","All","All");
+      self.setRealtime("second", 10);
+      self.setWordCount(10);
+
+    }
+
+    self.setData(data);
+    
     return self;
 }
 
