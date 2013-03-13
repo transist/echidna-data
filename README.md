@@ -24,7 +24,7 @@ You need to use [Browserify node module](https://github.com/substack/node-browse
 
 ## faker.js
 
-faker.js is a set of functions to generate data for stream
+faker.js is a set of functions to generate data for stream from a FeedConfig object
 
     var faker = require("faker");
-    var slice = faker.newSlice(5,1,false); 
+    var slice = faker.newSlice(feedconfig);
