@@ -2,7 +2,7 @@
 
 function Slice(data) {
     var self = this;
-    self.words = null;
+    self.words = [];
     self.time = null;
     if(data) {
       var other;
@@ -61,8 +61,9 @@ function Slice(data) {
         throw new Error('Values should be array, is ' + self.words);
       if(!(typeof self.time === 'string'))
         throw new Error('Timestamp should be string, is: ' + self.time);
-      if((self.words.length === 0))
-        throw new Error('Empty array of words ');
+      //in some cases, we may indeed have no words
+      //if((self.words.length === 0))
+      //  throw new Error('Empty array of words ');
     };
 
     self.toJSON = function() {

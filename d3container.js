@@ -53,13 +53,19 @@ function D3Container(desiredNumberOfXValues) {
   self.updateSlice = function(s) {
     if(!(s instanceof slice.Slice))
       throw new Error('not a slice');
-    var v;
-    while(v = s.next()) {
-      //var unixTime = moment(s.getTime()).unix();
-      // console.log(s.getTime());
-      // var unixTime = Date.parse(s.getTime());
-      // console.log(unixTime);
-      self.update(v.word, s.getTime(), v.count);
+    // we use moment instead of Date.parse as the
+    // moment parser is more forgiving and accepts
+    // timestamp such as 2013-03-12T01
+    var unixTime = moment(s.getTime()).valueOf();
+    if(s.words.length > 0) {
+      var v;
+      while(v = s.next()) {
+        self.update(v.word, unixTime, v.count);
+      }
+    } else {
+      // we have no words for this time value, but we still want
+      // to keep track of the timestamp so that we have no "holes"
+      self.update(null, unixTime, 0);
     }
   };
 
@@ -77,6 +83,10 @@ function D3Container(desiredNumberOfXValues) {
     // create the [key:, values: [x:, y:]] datastructure
     var newD3 = [];
     self.d3.forEach(function(d3, j) {
+        if(!d3.key) {
+          // in the case where we had no words for a particular timevalue
+          return;
+        }
         var o = {key: d3.key, values: []};
         newD3.push(o);
         // for each of the potential x values
