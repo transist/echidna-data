@@ -29,6 +29,16 @@ faker.js is a set of functions to generate data for stream from a FeedConfig obj
     var faker = require("faker");
     var slice = faker.newSlice(feedconfig);
 
-Keywords list can be updated by changing csv. You need to rebuild the list in JSON
+# List of fake keywords
+
+To update the list :
+
+1) Update in this [Google Spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0ArNEXxu0b66PdHdkZHJqcFpubUlrNGlZQ3d3Sk55R0E#gid=1)
+    
+2) Downloaded both sheets as CSV into ./faker/random_words_sheet1.csv and ./faker/random_words_sheet2.csv
+
+3) Rebuild keywords.json using the following command :
 
     node build_faker_keywords.js
+
+During the build, the function will provide stats about the length of the list for each panel

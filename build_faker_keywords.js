@@ -1,7 +1,7 @@
 var fs = require('fs');
 var $ = jQuery = require('jquery');
 require('./faker/jquery.csv.js');
-
+var faker = require('./faker')
 
 
 // FILES
@@ -31,13 +31,11 @@ fs.readFile(sample2, 'UTF-8', function(err, csv) {
     }
   });
 
-  console.log( JSON.stringify(words) );
+  // console.log( JSON.stringify(words) );
   json = JSON.stringify(words);
 
   writeToFile(json);
-
 });
-
 
 function writeToFile (json) {
   
@@ -45,7 +43,11 @@ function writeToFile (json) {
       if(err) {
           console.log(err);
       } else {
+          console.log("The file contains : ");
+          faker.listStats();
           console.log("The keywords file was saved!");
       }
   });
 }
+
+

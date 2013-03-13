@@ -27,8 +27,8 @@ function filterKeywords(feedconfig) {
     // Build request
     var genderFilter;
 
-    if(_gender == "Male") genderFilter = function(p) { return p.gender == 'M' }
-    else if (_gender == "Female")  genderFilter = function(p) { return p.gender == 'F' }
+    if(_gender == "Men") genderFilter = function(p) { return p.gender == 'M' }
+    else if (_gender == "Women")  genderFilter = function(p) { return p.gender == 'F' }
     else genderFilter = function(p) { return p.gender == 'F' || p.gender == 'M' }
 
     var ageFilter;
@@ -72,10 +72,22 @@ exports.newSlice = function (feedconfig){
     for (var i = 0; i < feedconfig.numberItems; i++) {
 
       // var word = randomKeywords.randomElement();
-      var word = results[i].word;
-      var count = Math.round(20*Math.random());
-      var source = 'http://weibo.com/ID';
-      var panel = 5;
+      
+      if ( i < results.length ) { 
+        var word = results[i].word;
+        var count = Math.round(20*Math.random());
+      
+      } else {
+
+        // add empty variables for missing words
+        var word = null;
+        var count = 0;
+        
+      }
+        
+        var source = 'http://weibo.com/ID';
+        var panel = 5;
+
       
       slice.addValue(word, count, source, panel);
     
@@ -86,3 +98,50 @@ exports.newSlice = function (feedconfig){
     return slice;
 }
 
+exports.listStats = function () {
+
+  var stats = [];
+  var feedconfig = new FeedConfig.FeedConfig();
+  feedconfig.setRealtime("second",10); // fix error
+  feedconfig.setWordCount(10)
+  // console.log(feedconfig)
+
+
+  for (var j = 0; j < feedconfig.validGender.length; j++) {
+    
+    var feedconfig = new FeedConfig.FeedConfig();
+    
+
+    for (var i = 0; i < feedconfig.validTier.length; i++) {
+
+      
+      for (var k = 0; k < feedconfig.validAgeRange.length; k++) {
+        
+        feedconfig.setTier(feedconfig.validTier[i]);
+        feedconfig.setGender(feedconfig.validGender[j]);
+        feedconfig.setAgeRange(feedconfig.validAgeRange[k]);
+
+        var results = filterKeywords(feedconfig);
+        var stat = {
+
+          number: results.length,
+          Gender : feedconfig.validGender[j],
+          Tier : feedconfig.validTier[i],
+          AgeRange : feedconfig.validAgeRange[k]
+          // filter : feedconfig.toJSON()
+        }
+
+        stats.push(stat);
+
+
+      };
+
+    };
+
+  };
+  
+  console.log(stats)
+
+  return stats
+
+}
