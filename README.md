@@ -28,3 +28,7 @@ faker.js is a set of functions to generate data for stream from a FeedConfig obj
 
     var faker = require("faker");
     var slice = faker.newSlice(feedconfig);
+
+Keywords list can be updated by changing csv. You need to rebuild the list in JSON
+
+    node build_faker_keywords.js

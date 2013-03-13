@@ -2,11 +2,17 @@ var fs = require('fs');
 var $ = jQuery = require('jquery');
 require('./faker/jquery.csv.js');
 
-var words = [];
 
-// READ CSV
+
+// FILES
+var OUT_FILE = "./faker/keywords.json";
 var sample1 = './faker/random_words_sheet1.csv';
 var sample2 = './faker/random_words_sheet2.csv';
+
+
+// READ CSV
+var words = [];
+var json;
 
 fs.readFile(sample1, 'UTF-8', function(err, csv) {
   $.csv.toObjects(csv, {}, function(err, data) {
@@ -24,6 +30,22 @@ fs.readFile(sample2, 'UTF-8', function(err, csv) {
       words.push(data[i]);
     }
   });
-    console.log( JSON.stringify(words) );
+
+  console.log( JSON.stringify(words) );
+  json = JSON.stringify(words);
+
+  writeToFile(json);
+
 });
 
+
+function writeToFile (json) {
+  
+  fs.writeFile(OUT_FILE, json, function(err) {
+      if(err) {
+          console.log(err);
+      } else {
+          console.log("The keywords file was saved!");
+      }
+  });
+}
