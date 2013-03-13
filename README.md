@@ -28,29 +28,3 @@ faker.js is a set of functions to generate data for stream
 
     var faker = require("faker");
     var slice = faker.newSlice(5,1,false); 
-
-
-ONE SLICE 
-
-Generate one slice
-
-    newSlice(numberItems, streamLength, init)
-    
-        - numberItems   : Integer   how many keywords fo you want
-        - streamLength  : Integer   how many values per keywords
-        - init          : Boolean   - true  : fake timestamp
-                                    - false : use Date.now()
-
-Return an Array containing keywords Object. Data strcutre : 
-
-    [
-          {
-              "keyword": "<KEYWORD>",
-              "sliceid" : "<TIMESTAMP X>"
-              "count" : "<X FOR TIME PERIOD>",
-              "samplesrcid": "<POST ID FROM WEIBO>",
-          },
-          {
-              // second keyword
-          }
-    ]
