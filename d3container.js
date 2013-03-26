@@ -55,7 +55,7 @@ function D3Container(desiredNumberOfXValues) {
       throw new Error('not a slice');
     // we use moment instead of Date.parse as the
     // moment parser is more forgiving and accepts
-    // timestamp such as 2013-03-12T01
+    // partial timestamp such as 2013-03-12T01
     var unixTime = moment(s.getTime()).valueOf();
     if(s.words.length > 0) {
       var v;
