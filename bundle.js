@@ -1,9 +1,11 @@
-;(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){
+;(function(e,t,n){function r(n,i){if(!t[n]){if(!e[n]){var s=typeof require=="function"&&require;if(!i&&s)return s(n,!0);throw new Error("Cannot find module '"+n+"'")}var o=t[n]={exports:{}};e[n][0](function(t){var i=e[n][1][t];return r(i?i:t)},o,o.exports)}return t[n].exports}for(var i=0;i<n.length;i++)r(n[i]);return r})({1:[function(require,module,exports){
 window.d3container =  require('./d3container');
 window.feedconfig =  require('./feedconfig');
-window.slicer =  require('./slice');
+// TODO: should probably stick to slice name to be consistent
+window.slice =  require('./slice');
 
 console.log('Requires loaded - compiled by Browserify');
+
 },{"./d3container":2,"./feedconfig":3,"./slice":4}],4:[function(require,module,exports){
 'use strict';
 
@@ -969,7 +971,6 @@ function FeedConfig(data) {
         self.end = null;
       }
     }
-    // self.setData(data);
 
     self.setToDefault = function() {
       
@@ -979,6 +980,8 @@ function FeedConfig(data) {
 
     }
 
+    self.setData(data);
+    
     return self;
 }
 
