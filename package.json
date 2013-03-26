@@ -8,8 +8,7 @@
     "mocha": "~1.8.1",
     "moment": "latest",
     "browserify": "latest",
-    "jquery": "latest",
-    "fs"  :   "latest"
+    "jquery": "latest"
   },
   "devDependencies": {},
   "scripts": {
