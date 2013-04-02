@@ -1,8 +1,10 @@
+// http://momentjs.com/
 var moment = require('moment');
 
 function FeedConfig(data) {
     var self = this;
-
+    
+    // TODO: these should be loaded from JSON object
     self.validGender = [
       'Both',
       'Men',
