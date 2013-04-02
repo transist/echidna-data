@@ -182,7 +182,16 @@ describe('d3container', function() {
       updater.update('word1', 2, 20);
       updater.update('word1', 3, 30);
       updater.update('word1', 4, 40);
+    });
 
+    it('exceeded array cuts off older values', function() {
+      var updater = new d3container.D3Container(current, 3);
+      updater.update('word1', 1, 10);
+      updater.update('word1', 2, 20);
+      updater.update('word1', 3, 30);
+      updater.update('word1', 4, 40);
+      JSON.stringify(current).should.equal(JSON.stringify([{"key":"word1","values":[{"x":2,"y":20},{"x":3,"y":30},{"x":4,"y":40}]}
+]));
     });
 
     it('emit event every update when no target value', function(done) {
@@ -343,9 +352,18 @@ describe('d3container', function() {
 
     it('reset on empty object', function() {
       var updater = new d3container.D3Container(current);
+      updater.setDesiredNumberOfXvalues(20);
+      JSON.stringify(current).should.equal(JSON.stringify([]));
+    });
+
+    it('alternative parameter-less construction', function() {
+      var updater = new d3container.D3Container();
+      updater.setArray(current);
+      updater.set
       updater.reset();
       JSON.stringify(current).should.equal(JSON.stringify([]));
     });
+
 
     it('fails on invalid parameter that is not slice.Slice', function(done) {
       var updater = new d3container.D3Container(current);
@@ -354,6 +372,13 @@ describe('d3container', function() {
       } catch(e) {
         done();
       }
+    });
+
+    it('test data from the simulated UI updates correctly', function() {
+      var testslice = '{"time":"1364888911281","words":[{"word":"欧美风","count":5,"source":"http://weibo.com/ID","panel":5},{"word":"七分袖","count":18,"source":"http://weibo.com/ID","panel":5},{"word":"堆堆领","count":6,"source":"http://weibo.com/ID","panel":5},{"word":"呢大衣","count":9,"source":"http://weibo.com/ID","panel":5},{"word":"违带裤","count":1,"source":"http://weibo.com/ID","panel":5},{"word":"橄榄领","count":8,"source":"http://weibo.com/ID","panel":5},{"word":"衬衫","count":4,"source":"http://weibo.com/ID","panel":5},{"word":"韩版","count":4,"source":"http://weibo.com/ID","panel":5},{"word":"工装靴裤","count":14,"source":"http://weibo.com/ID","panel":5},{"word":"字母","count":4,"source":"http://weibo.com/ID","panel":5}]}';
+      var updater = new d3container.D3Container(current);
+      updater.updateSlice(new slice.Slice(testslice));
+      JSON.stringify(current).should.equal(JSON.stringify([{"key":"字母","values":[{"x":1364888911281,"y":4}]},{"key":"工装靴裤","values":[{"x":1364888911281,"y":14}]},{"key":"韩版","values":[{"x":1364888911281,"y":4}]},{"key":"衬衫","values":[{"x":1364888911281,"y":4}]},{"key":"橄榄领","values":[{"x":1364888911281,"y":8}]},{"key":"违带裤","values":[{"x":1364888911281,"y":1}]},{"key":"呢大衣","values":[{"x":1364888911281,"y":9}]},{"key":"堆堆领","values":[{"x":1364888911281,"y":6}]},{"key":"七分袖","values":[{"x":1364888911281,"y":18}]},{"key":"欧美风","values":[{"x":1364888911281,"y":5}]}]));
     });
 
     it('moment works as expected and keeps the timezone information', function() {

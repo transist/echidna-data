@@ -17,6 +17,15 @@ function D3Container(object, desiredNumberOfXValues) {
   self.keys = object;
   self.desiredNumberOfXValues = desiredNumberOfXValues;
 
+  self.setArray = function(array) {
+    self.keys = array;
+    self.reset();
+  };
+
+  self.setDesiredNumberOfXvalues = function(desiredNumberOfXValues)  {
+    self.desiredNumberOfXValues = desiredNumberOfXValues;
+  }
+
   // key is word
   // x is timestamp in unix time
   // y is count
@@ -25,12 +34,16 @@ function D3Container(object, desiredNumberOfXValues) {
   // - make sure that every other key also has the same x value
   // - trim the list and remove older values if they are not in use
   self.update = function(key, x, y) {
+    if(!(self.keys instanceof Array)) {
+      throw new Error('self.keys is not a reference to an array');
+    }
+
     var keyIndex = self._getKeyIndex(key);
     // inside the key object, we can find the index
     var xIndex = self._getXIndex(x);
 
     //this is either an update or initing the newly created value
-    self.addXValue(x, xIndex);
+    self._addXValue(x, xIndex);
 
     // index is resorted so we need to retrieve the latest index
     xIndex = self._getXIndex(x);
@@ -44,7 +57,43 @@ function D3Container(object, desiredNumberOfXValues) {
     }
   };
 
-  self.addXValue = function(x, xIndex) {
+
+  self.updateSlice = function(s) {
+    if(!(self.keys instanceof Array)) {
+      throw new Error('self.keys is not a reference to an array');
+    }
+
+    if(!(s instanceof slice.Slice))
+      throw new Error('not a slice');
+    // we use moment instead of Date.parse as the
+    // moment parser is more forgiving and accepts
+    // partial timestamp such as 2013-03-12T01
+    var unixTime = moment(s.getTime()).valueOf();
+    if(!unixTime) {
+      unixTime = moment(parseInt(s.getTime())).valueOf();
+      if(!unixTime)
+        throw new Error('Invalid time from slice: ' + unixTime);
+    }
+    if(s.words.length > 0) {
+      var v;
+      while(v = s.next()) {
+        self.update(v.word, unixTime, v.count);
+      }
+    } else {
+      // we have no words for this time value, but we still want
+      // to keep track of the timestamp so that we have no "holes"
+      var xIndex = self._getXIndex(unixTime);
+      self._addXValue(unixTime, xIndex);
+    }
+  };
+
+  self.reset = function() {
+    // remove all values
+    self.keys.splice(0);
+    self._init();
+  };
+
+  self._addXValue = function(x, xIndex) {
     for(var k in self.keys) {
       var keyObject = self.keys[k];
       if(!keyObject.values[xIndex]) {
@@ -72,32 +121,6 @@ function D3Container(object, desiredNumberOfXValues) {
     //console.log(JSON.stringify(self.xToIndex));
 
   }
-
-  self.updateSlice = function(s) {
-    if(!(s instanceof slice.Slice))
-      throw new Error('not a slice');
-    // we use moment instead of Date.parse as the
-    // moment parser is more forgiving and accepts
-    // partial timestamp such as 2013-03-12T01
-    var unixTime = moment(s.getTime()).valueOf();
-    if(s.words.length > 0) {
-      var v;
-      while(v = s.next()) {
-        self.update(v.word, unixTime, v.count);
-      }
-    } else {
-      // we have no words for this time value, but we still want
-      // to keep track of the timestamp so that we have no "holes"
-      var xIndex = self._getXIndex(unixTime);
-      self.addXValue(unixTime, xIndex);
-    }
-  };
-
-  self.reset = function() {
-    // remove all values
-    self.keys.splice(0);
-    self._init();
-  };
 
   self._init = function() {
     self.keyToIndex = {};
@@ -139,11 +162,6 @@ function D3Container(object, desiredNumberOfXValues) {
     }
     return self.xToIndex[x];
   };
-
-  // NEW OBJECT INSTRUCTIONS
-  if(!(object instanceof Array)) {
-    throw new Error('first parameter should be a reference to an array');
-  }
 
   self._init();
 
