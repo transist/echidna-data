@@ -6,11 +6,11 @@ var slice = require('./slice.js');
 var moment = require('moment');
 
 // D3Container maintains an object that looks as follows:
-// [{key: KEYNAME1, values: [{x, y}]}, {key: KEYNAME2, values: [{x, y}]}, ...]
+// [{key: WORD1, values: [{x: TIME, y: COUNT}]}, {key: WORD2, values: [{x: TIME, y: COUNT}]}, ...]
+// key is word, x is time and y is count
 // condition:
 // - every values has the same list of x in the same order for every key
 // for our needs,
-// key is word, x is time and y is count
 function D3Container(object, desiredNumberOfXValues) {
   var self = this;
 
@@ -168,6 +168,6 @@ function D3Container(object, desiredNumberOfXValues) {
   return self;
 }
 
-util.inherits(D3Container, EventEmitter)
+util.inherits(D3Container, EventEmitter);
 
 exports.D3Container = D3Container;
