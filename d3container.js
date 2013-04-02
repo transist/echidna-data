@@ -5,50 +5,73 @@ var EventEmitter = require('events').EventEmitter;
 var slice = require('./slice.js');
 var moment = require('moment');
 
-function D3Container(desiredNumberOfXValues) {
+// D3Container maintains an object that looks as follows:
+// [{key: KEYNAME1, values: [{x, y}]}, {key: KEYNAME2, values: [{x, y}]}, ...]
+// condition:
+// - every values has the same list of x in the same order for every key
+// for our needs,
+// key is word, x is time and y is count
+function D3Container(object, desiredNumberOfXValues) {
   var self = this;
 
-  self.d3 = [];
-  self.keyToIndexes = {};
-  self.xIndexes = {};
-  self.xValues = [];
-  self.maxIndex = 0;
+  self.keys = object;
   self.desiredNumberOfXValues = desiredNumberOfXValues;
-
-  self.getKeyIndex = function(key) {
-    // if does not exist, initialize
-    if(self.keyToIndexes[key] === undefined) {
-      self.keyToIndexes[key] = {};
-      self.keyToIndexes[key].keyIndex = self.d3.length;
-      self.keyToIndexes[key].xIndexes = {};
-      self.d3.push({key: key, values: []});
-    }
-    return self.keyToIndexes[key].keyIndex;
-  };
-
-  self.getXIndex = function(key, keyIndex, x) {
-    if(self.xIndexes[x] === undefined) {
-      self.xIndexes[x] = self.maxIndex++;
-      self.xValues.push({x: x, index: self.xIndexes[x]});
-    }
-    if(self.d3[keyIndex].values[self.xIndexes[x]] === undefined) {
-      self.d3[keyIndex].values[self.xIndexes[x]] = {x:-1, y:-1};
-    }
-    return self.xIndexes[x];
-  };
 
   // key is word
   // x is timestamp in unix time
   // y is count
+  // function must:
+  // - add or update the x, y pair to the values associated to the key
+  // - make sure that every other key also has the same x value
+  // - trim the list and remove older values if they are not in use
   self.update = function(key, x, y) {
-    var keyIndex = self.getKeyIndex(key);
-    var xIndex = self.getXIndex(key, keyIndex, x);
-    self.d3[keyIndex].values[xIndex].x = x;
-    self.d3[keyIndex].values[xIndex].y = y;
-    if(!self.desiredNumberOfXValues || self.xValues.length >= self.desiredNumberOfXValues) {
+    var keyIndex = self._getKeyIndex(key);
+    // inside the key object, we can find the index
+    var xIndex = self._getXIndex(x);
+
+    //this is either an update or initing the newly created value
+    self.addXValue(x, xIndex);
+
+    // index is resorted so we need to retrieve the latest index
+    xIndex = self._getXIndex(x);
+
+    // set the actual y value
+    self.keys[keyIndex].values[xIndex].y = y;
+
+    // update always EXCEPT when we haven't reached the number of desired values
+    if(!self.desiredNumberOfXValues || self.keys[0].values.length >= self.desiredNumberOfXValues) {
       this.emit('updated');
     }
   };
+
+  self.addXValue = function(x, xIndex) {
+    for(var k in self.keys) {
+      var keyObject = self.keys[k];
+      if(!keyObject.values[xIndex]) {
+        keyObject.values[xIndex] = {x:x, y:0};
+      }
+
+      if(self.desiredNumberOfXValues && keyObject.values.length > self.desiredNumberOfXValues) {
+        var lastIndexRemoved = keyObject.values.length - self.desiredNumberOfXValues;
+        keyObject.values.splice(0, lastIndexRemoved);
+      }
+      // resort all every time
+      keyObject.values.sort(function(a, b) {
+        return a.x - b.x;
+      });
+    }
+
+    //console.log(JSON.stringify(self.keys));
+    // we've resorted the values, now resort index
+    var i = 0;
+    for(var v in self.keys[0].values) {
+      var value = self.keys[0].values[v];
+      self.xToIndex[value.x] = i;
+      i++;
+    }
+    //console.log(JSON.stringify(self.xToIndex));
+
+  }
 
   self.updateSlice = function(s) {
     if(!(s instanceof slice.Slice))
@@ -65,50 +88,64 @@ function D3Container(desiredNumberOfXValues) {
     } else {
       // we have no words for this time value, but we still want
       // to keep track of the timestamp so that we have no "holes"
-      self.update(null, unixTime, 0);
+      var xIndex = self._getXIndex(unixTime);
+      self.addXValue(unixTime, xIndex);
     }
   };
 
-  self.current = function() {
-    // xValues contain all possible x (timestamp)
-    self.xValues.sort(function(a,b) {
-      return a.x - b.x;
-    });
+  self.reset = function() {
+    // remove all values
+    self.keys.splice(0);
+    self._init();
+  };
 
-    // if we already have more than what this container needs, trim the list
-    if(self.desiredNumberOfXValues && self.xValues.length > self.desiredNumberOfXValues) {
-      self.xValues.splice(0, self.xValues.length - self.desiredNumberOfXValues);
+  self._init = function() {
+    self.keyToIndex = {};
+    self.xToIndex = {};
+    self.maxIndex = 0;
+  };
+
+  self._addNewKey = function(key) {
+    if(self.keyToIndex[key] !== undefined) {
+      throw new Error('Trying to add existing key ' + key);
     }
 
-    // create the [key:, values: [x:, y:]] datastructure
-    var newD3 = [];
-    self.d3.forEach(function(d3, j) {
-        if(!d3.key) {
-          // in the case where we had no words for a particular timevalue
-          return;
-        }
-        var o = {key: d3.key, values: []};
-        newD3.push(o);
-        // for each of the potential x values
-        self.xValues.forEach(function(v, i) {
-          // if it doesn't exist, add it but with a y of zero
-          if(d3.values[v.index] === undefined) {
-            o.values.push({x: v.x, y: 0});
-          }
-          // else, use the x:, y: value as is
-          else {
-            o.values.push({x: d3.values[v.index].x, y: d3.values[v.index].y});
-          }
-        });
-    });
-    return newD3;
+    // before we actually add it, length is equal to future index
+    self.keyToIndex[key] = self.keys.length;
+    var newKeyObject = {key: key, values: []};
+    // initialize to a copy of X values from the first object
+    if(self.keys[0] !== undefined) {
+      for(var v in self.keys[0].values) {
+        var x = self.keys[0].values[v].x;
+        newKeyObject.values.push({x:x, y:0});
+      }
+    }
+
+    self.keys.push(newKeyObject);
   }
 
-  self.setXValues = function(newValue) {
+  self._getKeyIndex = function(key) {
+    // if the key does not exist, create the empty object and initialize
+    if(self.keyToIndex[key] === undefined) {
+      self._addNewKey(key);
+    }
+    // either it already existed or we just initialized it with addNewKey
+    return self.keyToIndex[key];
+  };
 
-    self.desiredNumberOfXValues = newValue;
+  self._getXIndex = function(x) {
+    if(self.xToIndex[x] === undefined) {
+      self.xToIndex[x] = self.maxIndex++;
+    }
+    return self.xToIndex[x];
+  };
 
+  // NEW OBJECT INSTRUCTIONS
+  if(!(object instanceof Array)) {
+    throw new Error('first parameter should be a reference to an array');
   }
+
+  self._init();
 
   return self;
 }
